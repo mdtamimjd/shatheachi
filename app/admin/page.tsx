@@ -1,6 +1,6 @@
-
-import AdminProductItem from '@/components/adminProductItem';
-import React from 'react'
+import AdminProductItem from "@/components/adminProductItem";
+import dbConnect from "@/config/db";
+import productModel from "@/models/Product";
 export interface IProduct {
   _id: string;
   title: string;
@@ -13,21 +13,24 @@ export interface IProduct {
   updatedAt: string; // Or Date
   __v: number;
 }
-export default async function page() {
-  const req = await fetch(`${process.env.API_URL}/api/product`);
-  const res = await req.json()
-  const data = res.products;
+
+export default async function Page() {
+  await dbConnect();
+
+  const data = await productModel.find().lean();
+
   return (
-    <div>
-      <section className='w-full p-5 gap-5 xl:max-w-7xl mx-auto flex flex-col'>
-                {
-          data.length > 0 
-          ?
-            data.map((p:IProduct,i:number)=> <AdminProductItem product={p} key={i} />)
-          :
-          <p>Write now product not available</p>
-        }
-      </section>
-    </div>
-  )
+    <section className="w-full p-5 gap-5 xl:max-w-7xl mx-auto flex flex-col">
+      {data.length > 0 ? (
+        data.map((p: IProduct) => (
+          <AdminProductItem
+            key={p._id.toString()}
+            product={JSON.parse(JSON.stringify(p))}
+          />
+        ))
+      ) : (
+        <p>Right now product not available</p>
+      )}
+    </section>
+  );
 }
